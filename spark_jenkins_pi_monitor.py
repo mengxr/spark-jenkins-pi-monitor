@@ -42,7 +42,8 @@ def get_pin(color):
     elif color == "g":
         pin = 11
     else:
-        raise RuntimeError("Do not support color %s." % color)    
+        raise RuntimeError("Do not support color %s." % color)
+    return pin
         
 def turn_on(color, duration=None):
     """turn on a traffic light for given duration"""
