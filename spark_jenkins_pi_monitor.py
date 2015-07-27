@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import time
-from jenkinsapi.jenkins import Jenkins
+from urllib2 import urlopen
+import json
 
 try:
     import RPi.GPIO as gpio
@@ -15,17 +16,19 @@ def setup_traffic_light():
     for pin in [9, 10, 11]:
         gpio.setup(pin, gpio.OUT)
 
+def is_last_completed_good(job):
+    url = "https://amplab.cs.berkeley.edu/jenkins/job/%s/lastCompletedBuild/api/json" % job
+    response = json.load(urlopen(url))
+    return response["result"] == "SUCCESS"
+        
 def check_spark_builds():
     """check Spark master and PR builds"""
-    server = Jenkins("https://amplab.cs.berkeley.edu/jenkins/")
-    master = server.get_job("Spark-Master-SBT")
-    if master.get_last_completed_build().is_good():
+    if is_last_completed_good("Spark-Master-SBT"):
         turn_off("r")
         turn_on("g", 3)
     else:
         turn_on("r")
-    pr = server.get_job("SparkPullRequestBuilder")
-    if pr.get_last_completed_build().is_good():
+    if is_last_completed_good("SparkPullRequestBuilder"):
         turn_on("g", 2)
     else:
         turn_on("y", 3)
